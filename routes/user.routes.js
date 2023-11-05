@@ -17,7 +17,15 @@ const {
   getUserStatisticsByDate,
 } = require("../controllers/transaction.controller");
 
-const userJoiSchema = Joi.object({
+const userLoginJoiSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string()
+    .regex(/[0-9a-zA-Z]*\d[0-9a-zA-Z]*/)
+    .min(4)
+    .required(),
+});
+
+const userRegisterJoiSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string()
     .regex(/[0-9a-zA-Z]*\d[0-9a-zA-Z]*/)
@@ -62,7 +70,7 @@ const userJoiSchema = Joi.object({
 
 router.post("/register", async (req, res, next) => {
   try {
-    const { error, value } = userJoiSchema.validate(req.body);
+    const { error, value } = userRegisterJoiSchema.validate(req.body);
     if (error) {
       res.status(400).json({
         status: "Conflict",
@@ -121,7 +129,7 @@ router.post("/register", async (req, res, next) => {
 
 router.post("/login", async (req, res, next) => {
   try {
-    const { error, value } = userJoiSchema.validate(req.body);
+    const { error, value } = userLoginJoiSchema.validate(req.body);
     if (error) {
       return res.status(400).json({
         status: "Bad Request",
@@ -136,7 +144,7 @@ router.post("/login", async (req, res, next) => {
     if (userAuth) {
       const payload = {
         id: user.id,
-        username: user.username,
+        firstname: user.firstname,
       };
       const token = jwt.sign(payload, secret, { expiresIn: "1h" });
       await setToken(user.email, token);
@@ -146,6 +154,7 @@ router.post("/login", async (req, res, next) => {
         data: {
           ID: user._id,
           email: user.email,
+          firstname: user.firstname,
           balance: user.balance,
           token: token,
         },
@@ -154,7 +163,7 @@ router.post("/login", async (req, res, next) => {
       return res.json({
         status: "failure",
         code: 400,
-        message: error,
+        message: "Wrong email or password",
       });
     }
   } catch (error) {
