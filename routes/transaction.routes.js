@@ -1,15 +1,20 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-require('dotenv').config();
+require("dotenv").config();
 const auth = require("../middlewares/auth");
 const {
-    addTransaction,
-    getTransactionById,
-    updateTransaction,
-    deleteTransaction,
-    getTransactionsAmountsDifference
-} = require('../controllers/transaction.controller');
-const {handleUserBalance, getUserBalance, updateUserBalance, findUserById} = require('../controllers/user.controller');
+  addTransaction,
+  getTransactionById,
+  updateTransaction,
+  deleteTransaction,
+  getTransactionsAmountsDifference,
+} = require("../controllers/transaction.controller");
+const {
+  handleUserBalance,
+  getUserBalance,
+  updateUserBalance,
+  findUserById,
+} = require("../controllers/user.controller");
 
 /**
  * @swagger
@@ -63,39 +68,45 @@ const {handleUserBalance, getUserBalance, updateUserBalance, findUserById} = req
  *            description: Failure while adding transaction.
  */
 
-router.post('/', auth, async (req, res, next) => {
-    try {
-        const {type, category, amount, date, comment, owner} = req.body;
-        const createdTransaction = await addTransaction(type, category, amount, date, comment, owner);
-        if (type === 'income' || type === 'expense') {
-            await handleUserBalance(type, amount, owner);
-            const balance = await getUserBalance(owner);
-            res.json({
-                status: 'Success',
-                code: 200,
-                data: {
-                    _id: createdTransaction._id,
-                    type: createdTransaction.type,
-                    category: createdTransaction.category,
-                    amount: createdTransaction.amount,
-                    date: createdTransaction.date,
-                    comment: createdTransaction.comment,
-                    owner: createdTransaction.owner
-                },
-                userBalance: balance
-            })
-        } else {
-            res.json({
-                status: 'Failure',
-                code: 400,
-                message: 'Wrong transaction type'
-            })
-        }
-
-    } catch (err) {
-        next(err);
+router.post("/", auth, async (req, res, next) => {
+  try {
+    const { type, category, amount, date, comment, owner } = req.body;
+    const createdTransaction = await addTransaction(
+      type,
+      category,
+      amount,
+      date,
+      comment,
+      owner
+    );
+    if (type === "income" || type === "expense") {
+      await handleUserBalance(type, amount, owner);
+      const balance = await getUserBalance(owner);
+      res.json({
+        status: "Success",
+        code: 200,
+        data: {
+          _id: createdTransaction._id,
+          type: createdTransaction.type,
+          category: createdTransaction.category,
+          amount: createdTransaction.amount,
+          date: createdTransaction.date,
+          comment: createdTransaction.comment,
+          owner: createdTransaction.owner,
+        },
+        userBalance: balance,
+      });
+    } else {
+      res.json({
+        status: "Failure",
+        code: 400,
+        message: "Wrong transaction type",
+      });
     }
-})
+  } catch (err) {
+    next(err);
+  }
+});
 
 /**
  * @swagger
@@ -119,32 +130,32 @@ router.post('/', auth, async (req, res, next) => {
  *            description: Transaction does not exist
  */
 
-router.delete('/:transactionId', auth, async (req, res, next) => {
-    try {
-        const {transactionId} = req.params;
-        const transaction = await getTransactionById(transactionId);
-        console.log(transaction);
-        if (transaction) {
-            await deleteTransaction(transactionId);
-            const user = await findUserById(transaction.owner);
-            res.json({
-                status: 'OK',
-                code: 200,
-                data: {_id: transactionId},
-                userBalance: user.balance,
-                message: 'Transaction deleted',
-            })
-        } else {
-            res.json({
-                status: 'Failure',
-                code: 404,
-                message: 'Transaction not found'
-            })
-        }
-    } catch (err) {
-        next(err);
+router.delete("/:transactionId", auth, async (req, res, next) => {
+  try {
+    const { transactionId } = req.params;
+    const transaction = await getTransactionById(transactionId);
+    console.log(transaction);
+    if (transaction) {
+      await deleteTransaction(transactionId);
+      const user = await findUserById(transaction.owner);
+      res.json({
+        status: "OK",
+        code: 200,
+        data: { _id: transactionId },
+        userBalance: user.balance,
+        message: "Transaction deleted",
+      });
+    } else {
+      res.json({
+        status: "Failure",
+        code: 404,
+        message: "Transaction not found",
+      });
     }
-})
+  } catch (err) {
+    next(err);
+  }
+});
 
 /**
  * @swagger
@@ -168,27 +179,27 @@ router.delete('/:transactionId', auth, async (req, res, next) => {
  *            description: Transaction does not exist
  */
 
-router.get('/category/:transactionId', auth, async (req, res, next) => {
-    try {
-        const {transactionId} = req.query;
-        const transaction = await getTransactionById(transactionId);
-        if (transaction) {
-            res.json({
-                status: 'Success',
-                code: 200,
-                data: transaction
-            })
-        } else {
-            res.json({
-                status: "Not found",
-                code: 404,
-                message: "Given transaction does not exist"
-            })
-        }
-    } catch (err) {
-        next(err);
+router.get("/category/:transactionId", auth, async (req, res, next) => {
+  try {
+    const { transactionId } = req.params;
+    const transaction = await getTransactionById(transactionId);
+    if (transaction) {
+      res.json({
+        status: "Success",
+        code: 200,
+        data: transaction,
+      });
+    } else {
+      res.json({
+        status: "Not found",
+        code: 404,
+        message: "Given transaction does not exist",
+      });
     }
-})
+  } catch (err) {
+    next(err);
+  }
+});
 
 /**
  * @swagger
@@ -248,33 +259,46 @@ router.get('/category/:transactionId', auth, async (req, res, next) => {
  *            description: Transaction not found or not updated.
  */
 
-router.patch('/:transactionId', auth, async (req, res, next) => {
-    try {
-        const {transactionId} = req.params;
-        const {type, category, amount, date, comment, owner} = req.body;
-        const fixedBalance = await getTransactionsAmountsDifference(transactionId, type, amount, owner);
-        const updateResult = await updateTransaction(transactionId, type, category, amount, date, comment, owner);
-        if (updateResult !== null) {
-            await updateUserBalance(owner, fixedBalance);
-            const transaction = await getTransactionById(transactionId);
-            const user = await findUserById(owner);
-            res.json({
-                status: 'Success',
-                code: 200,
-                message: 'Transaction updated successfully',
-                data: transaction,
-                userBalance: user.balance
-            })
-        } else {
-            res.json({
-                status: 'Failure',
-                code: 400,
-                message: 'Transaction not found or not updated'
-            })
-        }
-    } catch (err) {
-        next(err);
+router.patch("/:transactionId", auth, async (req, res, next) => {
+  try {
+    const { transactionId } = req.params;
+    const { type, category, amount, date, comment, owner } = req.body;
+    const fixedBalance = await getTransactionsAmountsDifference(
+      transactionId,
+      type,
+      amount,
+      owner
+    );
+    const updateResult = await updateTransaction(
+      transactionId,
+      type,
+      category,
+      amount,
+      date,
+      comment,
+      owner
+    );
+    if (updateResult !== null) {
+      await updateUserBalance(owner, fixedBalance);
+      const transaction = await getTransactionById(transactionId);
+      const user = await findUserById(owner);
+      res.json({
+        status: "Success",
+        code: 200,
+        message: "Transaction updated successfully",
+        data: transaction,
+        userBalance: user.balance,
+      });
+    } else {
+      res.json({
+        status: "Failure",
+        code: 400,
+        message: "Transaction not found or not updated",
+      });
     }
-})
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;
