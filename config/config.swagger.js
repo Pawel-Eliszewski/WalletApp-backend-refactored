@@ -4,12 +4,12 @@ const swaggerOptions = {
   swaggerDefinition: {
     openapi: "3.0.0",
     info: {
-      title: "Wallet-App API",
-      version: "1.0.0",
+      title: "Finance App 'Wallet' API",
+      version: "2.0.0",
       description:
         "# Documentation\n" +
         "\n" +
-        "The Wallet-App API is a feature-rich application that allows users to manage their finances by recording income and expenses in various categories. It also provides user authentication and authorization to ensure data privacy and security.\n" +
+        "The Finance App 'Wallet' API is a feature-rich application that allows users to manage their finances by recording income and expenses in various categories. It also provides user authentication and authorization to ensure data privacy and security.\n" +
         "\n" +
         "## Features\n" +
         "\n" +
@@ -23,7 +23,7 @@ const swaggerOptions = {
         "\n" +
         "## API Endpoints\n" +
         "\n" +
-        "- `/user/register` (POST): Register a new user with a unique email and password.\n" +
+        "- `/user/register` (POST): Register a new user with a first name, unique email and password.\n" +
         "- `/user/login` (POST): Log in to the application and receive an authentication token.\n" +
         "- `/user/logout` (GET): Log out the authenticated user.\n" +
         "- `/user/{userId}/transactions` (GET): Get a list of transactions for a specific user.\n" +
