@@ -141,24 +141,42 @@ router.post("/login", async (req, res, next) => {
     const { email, password } = value;
     const user = await findUserByEmail(email);
     const userAuth = await authenticateUser(email, password);
+
     if (userAuth) {
       const payload = {
         id: user.id,
         firstname: user.firstname,
       };
-      const token = jwt.sign(payload, secret, { expiresIn: "1h" });
-      await setToken(user.email, token);
-      return res.json({
-        status: "success",
-        code: 200,
-        data: {
-          ID: user._id,
-          email: user.email,
-          firstname: user.firstname,
-          balance: user.balance,
-          token: token,
-        },
-      });
+
+      const userIdAllowedWithoutToken = '650f2fb1143d76a0d93a0176';
+
+      if (user.id !== userIdAllowedWithoutToken) {
+        const token = jwt.sign(payload, secret, { expiresIn: "1h" });
+        await setToken(user.email, token);
+
+        return res.json({
+          status: "success",
+          code: 200,
+          data: {
+            ID: user._id,
+            email: user.email,
+            firstname: user.firstname,
+            balance: user.balance,
+            token: token,
+          },
+        });
+      } else {
+        return res.json({
+          status: "success",
+          code: 200,
+          data: {
+            ID: user._id,
+            email: user.email,
+            firstname: user.firstname,
+            balance: user.balance,
+          },
+        });
+      }
     } else {
       return res.json({
         status: "failure",
