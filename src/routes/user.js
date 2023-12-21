@@ -8,6 +8,7 @@ import {
   setToken,
   findUserById,
 } from "../controllers/user.js";
+import { getUserTransactions } from "../controllers/transaction.js";
 import {
   userLoginSchema,
   userRegisterSchema,
@@ -252,7 +253,7 @@ router.get("/:userId/transactions", auth, async (req, res, next) => {
         message: "User not found",
       });
     } else {
-      const transactions = await getUsersTransactions(userId);
+      const transactions = await getUserTransactions(userId);
       if (!transactions) {
         res.json({
           status: "Failure",
