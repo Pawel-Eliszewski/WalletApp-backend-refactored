@@ -1,15 +1,17 @@
-import createError from "http-errors";
-import express, { json, urlencoded } from "express";
+import express from "express";
+import { json, urlencoded } from "express";
 import cors from "cors";
-import "./src/config/passport.js";
+import createError from "http-errors";
 import cookieParser from "cookie-parser";
 import logger from "morgan";
-const app = express();
-const formatsLogger = app.get("env") === "development" ? "dev" : "short";
+import { serve, setup } from "swagger-ui-express";
 import usersRouter from "./src/routes/user.js";
 import transactionsRouter from "./src/routes/transaction.js";
-import { serve, setup } from "swagger-ui-express";
 import swaggerSpec from "./src/config/swagger.js";
+import "./src/config/passport.js";
+
+const app = express();
+const formatsLogger = app.get("env") === "development" ? "dev" : "short";
 
 app.use(logger(formatsLogger));
 app.use(cors());
@@ -19,6 +21,25 @@ app.use(cookieParser());
 app.use("/user", usersRouter);
 app.use("/transaction", transactionsRouter);
 app.use("/api-docs", serve, setup(swaggerSpec));
+
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    "https://finance-app-wallet.netlify.app",
+    "http://localhost:5173",
+  ];
+
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  next();
+});
 
 app.use(function (req, res, next) {
   next(createError(404));
