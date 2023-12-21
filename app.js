@@ -23,16 +23,7 @@ app.use("/transaction", transactionsRouter);
 app.use("/api-docs", serve, setup(swaggerSpec));
 
 app.use((req, res, next) => {
-  const allowedOrigins = [
-    "https://finance-app-wallet.netlify.app",
-    "http://localhost:5173",
-  ];
-
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-
+  res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
   res.header(
     "Access-Control-Allow-Headers",
