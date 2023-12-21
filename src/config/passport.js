@@ -4,7 +4,7 @@ import User from "../schemas/user.js";
 import "dotenv/config";
 
 const params = {
-  secretOrKey: process.env.SECRET_KEY,
+  secretOrKey: process.env.SECRET,
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 };
 

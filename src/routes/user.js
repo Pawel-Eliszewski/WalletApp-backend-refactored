@@ -15,7 +15,7 @@ import {
 import "dotenv/config";
 
 const router = Router();
-const secret = process.env.SECRET_KEY;
+const secret = process.env.SECRET;
 
 /**
  * @swagger
