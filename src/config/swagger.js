@@ -1,4 +1,4 @@
-const swaggerJSDoc = require("swagger-jsdoc");
+import swaggerJSDoc from "swagger-jsdoc";
 
 const swaggerOptions = {
   swaggerDefinition: {
@@ -17,10 +17,6 @@ const swaggerOptions = {
         "\n" +
         "- **Transaction Management:** Users can add, update, and retrieve their financial transactions, including details like type, category, amount, date, and comments.\n" +
         "\n" +
-        "- **User Balances:** The application keeps track of users' balances, automatically adjusting them when new transactions are added.\n" +
-        "\n" +
-        "- **Statistics:** Users can retrieve financial statistics, including total income and expenses for a specific date range.\n" +
-        "\n" +
         "## API Endpoints\n" +
         "\n" +
         "- `/user/register` (POST): Register a new user with a first name, unique email and password.\n" +
@@ -28,7 +24,6 @@ const swaggerOptions = {
         "- `/user/logout` (GET): Log out the authenticated user.\n" +
         "- `/user/{userId}/transactions` (GET): Get a list of transactions for a specific user.\n" +
         "- `/user/current` (GET): Authenticates user, returns his data.\n" +
-        "- `/user/{userId}/statistics` (GET): Get financial statistics for a specific user and date range.\n" +
         "- `/transaction` (POST, PATCH, GET, DELETE): Add a new transaction, update an existing transaction, get a specific transaction by ID, or delete transaction.\n" +
         "\n" +
         "## Server Information\n" +
@@ -64,10 +59,8 @@ const swaggerOptions = {
  *     description: User operations
  *   - name: Transactions
  *     description: User transaction operations
- *   - name: Statistics
- *     description: User statistics operations
  */
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
-module.exports = swaggerSpec;
+export default swaggerSpec;

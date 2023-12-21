@@ -1,42 +1,21 @@
-const express = require("express");
-const Joi = require("joi");
-const router = express.Router();
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
-const secret = process.env.SECRET;
-const auth = require("../middlewares/auth");
-const {
+import { Router } from "express";
+import jwt from "jsonwebtoken";
+import auth from "../middlewares/auth.js";
+import {
   findUserByEmail,
   registerUser,
   authenticateUser,
   setToken,
   findUserById,
-} = require("../controllers/user.controller");
-const {
-  getUsersTransactions,
-  getUserStatisticsByDate,
-} = require("../controllers/transaction.controller");
+} from "../controllers/user.js";
+import {
+  userLoginSchema,
+  userRegisterSchema,
+} from "../utils/validationSchemas.js";
+import "dotenv/config";
 
-const userLoginJoiSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string()
-    .regex(/[0-9a-zA-Z]*\d[0-9a-zA-Z]*/)
-    .min(4)
-    .required(),
-});
-
-const userRegisterJoiSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string()
-    .regex(/[0-9a-zA-Z]*\d[0-9a-zA-Z]*/)
-    .min(4)
-    .required(),
-  firstname: Joi.string()
-    .regex(/[a-zA-Z]*/)
-    .min(2)
-    .max(10)
-    .required(),
-});
+const router = Router();
+const secret = process.env.SECRET_KEY;
 
 /**
  * @swagger
@@ -70,7 +49,7 @@ const userRegisterJoiSchema = Joi.object({
 
 router.post("/register", async (req, res, next) => {
   try {
-    const { error, value } = userRegisterJoiSchema.validate(req.body);
+    const { error, value } = userRegisterSchema.validate(req.body);
     if (error) {
       res.status(400).json({
         status: "Conflict",
@@ -129,7 +108,7 @@ router.post("/register", async (req, res, next) => {
 
 router.post("/login", async (req, res, next) => {
   try {
-    const { error, value } = userLoginJoiSchema.validate(req.body);
+    const { error, value } = userLoginSchema.validate(req.body);
     if (error) {
       return res.status(400).json({
         status: "Bad Request",
@@ -148,7 +127,7 @@ router.post("/login", async (req, res, next) => {
         firstname: user.firstname,
       };
 
-      const userIdAllowedWithoutToken = '650f2fb1143d76a0d93a0176';
+      const userIdAllowedWithoutToken = "650f2fb1143d76a0d93a0176";
 
       if (user.id !== userIdAllowedWithoutToken) {
         const token = jwt.sign(payload, secret, { expiresIn: "1h" });
@@ -161,7 +140,6 @@ router.post("/login", async (req, res, next) => {
             ID: user._id,
             email: user.email,
             firstname: user.firstname,
-            balance: user.balance,
             token: token,
           },
         });
@@ -173,7 +151,6 @@ router.post("/login", async (req, res, next) => {
             ID: user._id,
             email: user.email,
             firstname: user.firstname,
-            balance: user.balance,
           },
         });
       }
@@ -295,59 +272,4 @@ router.get("/:userId/transactions", auth, async (req, res, next) => {
   }
 });
 
-/**
- * @swagger
- * /user/{userId}/statistics:
- *   get:
- *     summary: Get user statistics by user ID and date
- *     tags: [Statistics]
- *     parameters:
- *       - in: path
- *         name: userId
- *         schema:
- *           type: string
- *         required: true
- *         description: User ID
- *       - in: query
- *         name: transactionsDate
- *         schema:
- *           type: string
- *         required: true
- *         description: Date for which to retrieve statistics
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       '200':
- *         description: User statistics retrieved successfully
- *       '404':
- *         description: User not found
- */
-
-router.get("/:userId/statistics", auth, async (req, res, next) => {
-  try {
-    const { userId } = req.params;
-    const { transactionsDate } = req.body;
-    const user = await findUserById(userId);
-    if (!user) {
-      res.json({
-        status: "Not Found",
-        code: 404,
-        message: "User not found",
-      });
-    } else {
-      const transactions = await getUserStatisticsByDate(
-        userId,
-        transactionsDate
-      );
-      res.json({
-        status: "OK",
-        code: 200,
-        data: transactions,
-      });
-    }
-  } catch (err) {
-    next(err);
-  }
-});
-
-module.exports = router;
+export default router;

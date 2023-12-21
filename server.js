@@ -1,6 +1,6 @@
-const app = require("./app");
-const mongoose = require("mongoose");
-require("dotenv").config();
+import mongoose from "mongoose";
+import app from "./app.js";
+import "dotenv/config";
 
 const PORT = process.env.PORT || 3000;
 const DB = process.env.DB_HOST;
