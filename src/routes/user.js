@@ -16,7 +16,7 @@ import {
   userLoginSchema,
   userRegisterSchema,
 } from "../utils/validationSchemas.js";
-import sendEmail from "../utils/sendEmail.js";
+import sendVerificationEmail from "../utils/sendVerificationEmail.js";
 import "dotenv/config";
 
 const router = Router();
@@ -56,7 +56,7 @@ router.post("/register", async (req, res, next) => {
   try {
     const { error, value } = userRegisterSchema.validate(req.body);
     if (error) {
-      res.status(400).json({
+      res.json({
         status: "Conflict",
         code: 400,
         message: "Validation error",
@@ -67,7 +67,7 @@ router.post("/register", async (req, res, next) => {
     const { email, password, firstname } = value;
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
-      res.status(400).json({
+      res.json({
         status: "Conflict",
         code: 400,
         message: "Email in use",
@@ -80,8 +80,8 @@ router.post("/register", async (req, res, next) => {
         firstname,
         verificationToken
       );
-      sendEmail(email, firstname, verificationToken);
-      res.status(201).json({
+      sendVerificationEmail(email, firstname, verificationToken);
+      res.json({
         status: "Success",
         code: 201,
         data: user,
@@ -97,7 +97,7 @@ router.get("/verify/:verificationToken", async (req, res, next) => {
   const user = await findUserByVerificationToken(verificationToken);
 
   if (!user) {
-    return res.status(404).json({
+    return res.json({
       status: "Bad request",
       code: 404,
       message: "User not found",
@@ -109,7 +109,7 @@ router.get("/verify/:verificationToken", async (req, res, next) => {
       verificationToken: null,
     });
     return res.json({
-      status: "success",
+      status: "Success",
       code: 200,
       message: "Verification successful",
     });
@@ -149,7 +149,7 @@ router.post("/login", async (req, res, next) => {
   try {
     const { error, value } = userLoginSchema.validate(req.body);
     if (error) {
-      return res.status(400).json({
+      return res.json({
         status: "Bad Request",
         code: 400,
         message: "Validation error",
@@ -164,8 +164,18 @@ router.post("/login", async (req, res, next) => {
       const payload = {
         id: user.id,
         firstname: user.firstname,
+        verified: user.verified,
       };
 
+      if (!user.verified) {
+        return res.json({
+          status: "Failure",
+          code: 400,
+          message: "User not verified",
+        });
+      }
+
+      //DemoUser
       const userIdAllowedWithoutToken = "650f2fb1143d76a0d93a0176";
 
       if (user.id !== userIdAllowedWithoutToken) {
@@ -173,7 +183,7 @@ router.post("/login", async (req, res, next) => {
         await setToken(user.email, token);
 
         return res.json({
-          status: "success",
+          status: "Success",
           code: 200,
           data: {
             ID: user._id,
@@ -184,12 +194,13 @@ router.post("/login", async (req, res, next) => {
         });
       } else {
         return res.json({
-          status: "success",
+          status: "Success",
           code: 200,
           data: {
             ID: user._id,
             email: user.email,
             firstname: user.firstname,
+            token: null,
           },
         });
       }
@@ -248,7 +259,7 @@ router.get("/logout", auth, async (req, res, next) => {
   const { email } = req.user;
   await setToken(email, null);
   res.json({
-    status: "success",
+    status: "Success",
     code: 200,
     data: {
       message: `Successfully logged out user: ${email}`,

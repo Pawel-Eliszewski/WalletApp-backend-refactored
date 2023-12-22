@@ -1,6 +1,6 @@
 import sgMail from "@sendgrid/mail";
 
-const sendEmail = (email, firstname, verificationToken) => {
+const sendVerificationEmail = (email, firstname, verificationToken) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const msg = {
     to: `${email}`,
@@ -27,4 +27,4 @@ const sendEmail = (email, firstname, verificationToken) => {
     });
 };
 
-export default sendEmail;
+export default sendVerificationEmail;
