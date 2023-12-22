@@ -1,18 +1,22 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 import auth from "../middlewares/auth.js";
+import { nanoid } from "nanoid";
 import {
   findUserByEmail,
+  findUserById,
+  findUserByVerificationToken,
   registerUser,
+  updateUser,
   authenticateUser,
   setToken,
-  findUserById,
 } from "../controllers/user.js";
 import { getUserTransactions } from "../controllers/transaction.js";
 import {
   userLoginSchema,
   userRegisterSchema,
 } from "../utils/validationSchemas.js";
+import sendEmail from "../utils/sendEmail.js";
 import "dotenv/config";
 
 const router = Router();
@@ -69,7 +73,14 @@ router.post("/register", async (req, res, next) => {
         message: "Email in use",
       });
     } else {
-      const user = await registerUser(email, password, firstname);
+      const verificationToken = nanoid();
+      const user = await registerUser(
+        email,
+        password,
+        firstname,
+        verificationToken
+      );
+      sendEmail(email, verificationToken);
       res.status(201).json({
         status: "Success",
         code: 201,
@@ -78,6 +89,33 @@ router.post("/register", async (req, res, next) => {
     }
   } catch (err) {
     next(err);
+  }
+});
+
+router.get("/verify/:verificationToken", async (req, res, next) => {
+  const { verificationToken } = req.params;
+  const user = await findUserByVerificationToken(verificationToken);
+
+  if (!user) {
+    return res.status(404).json({
+      status: "Bad request",
+      code: 404,
+      message: "User not found",
+    });
+  }
+  try {
+    await updateUser(user.id, {
+      verify: true,
+      verificationToken: null,
+    });
+    return res.json({
+      status: "success",
+      code: 200,
+      message: "Verification successful",
+    });
+  } catch (e) {
+    console.error(e);
+    next(e);
   }
 });
 
