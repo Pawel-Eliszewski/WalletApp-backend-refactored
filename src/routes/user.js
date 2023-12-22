@@ -20,7 +20,7 @@ import sendEmail from "../utils/sendEmail.js";
 import "dotenv/config";
 
 const router = Router();
-const secret = process.env.SECRET;
+const secret = process.env.SECRET_KEY;
 
 /**
  * @swagger

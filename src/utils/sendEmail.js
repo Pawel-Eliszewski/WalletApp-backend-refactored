@@ -6,10 +6,10 @@ const sendEmail = (email, verificationToken) => {
     to: `${email}`,
     from: "eliszewskipawel@gmail.com",
     subject: "Wallet App - Link weryfikacyjny / Verification link",
-    html: `<p>W celu weryfikacji konta proszę kliknąć w poniższy link:</p><br>
+    html: `<p>W celu weryfikacji konta proszę kliknąć w poniższy link:</p>
       <a href="https://finance-app-wallet.netlify.app/verify/${verificationToken}">Zwryfikuj konto</a>
       <br><br>
-      <p>To verify your account please click the following link:</p><br>
+      <p>To verify your account please click the following link:</p>
       <a href="https://finance-app-wallet.netlify.app/verify/${verificationToken}">Verify your account</a>
     `,
   };
