@@ -28,10 +28,10 @@ const UserSchema = new Schema({
     type: Boolean,
     default: false,
   },
-  // verificationToken: {
-  //   type: String,
-  //   required: [true, "Verify token is required"],
-  // },
+  verificationToken: {
+    type: String,
+    required: [true, "Verification token is required"],
+  },
 });
 
 UserSchema.methods.setPassword = async function (password) {

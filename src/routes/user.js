@@ -80,7 +80,7 @@ router.post("/register", async (req, res, next) => {
         firstname,
         verificationToken
       );
-      sendEmail(email, verificationToken);
+      sendEmail(email, firstname, verificationToken);
       res.status(201).json({
         status: "Success",
         code: 201,
