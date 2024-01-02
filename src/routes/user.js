@@ -56,9 +56,8 @@ router.post("/register", async (req, res, next) => {
   try {
     const { error, value } = userRegisterSchema.validate(req.body);
     if (error) {
-      res.json({
+      res.status(400).json({
         status: "Conflict",
-        code: 400,
         message: "Validation error",
         details: error.details,
       });
@@ -67,9 +66,8 @@ router.post("/register", async (req, res, next) => {
     const { email, password, firstname } = value;
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
-      res.json({
+      res.status(400).json({
         status: "Conflict",
-        code: 400,
         message: "Email in use",
       });
     } else {
@@ -81,14 +79,14 @@ router.post("/register", async (req, res, next) => {
         verificationToken
       );
       sendVerificationEmail(email, firstname, verificationToken);
-      res.json({
+      res.status(201).json({
         status: "Success",
-        code: 201,
         data: user,
       });
     }
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
 });
 
@@ -97,9 +95,8 @@ router.get("/verify/:verificationToken", async (req, res, next) => {
   const user = await findUserByVerificationToken(verificationToken);
 
   if (!user) {
-    return res.json({
+    return res.status(404).json({
       status: "Bad request",
-      code: 404,
       message: "User not found",
     });
   }
@@ -108,14 +105,13 @@ router.get("/verify/:verificationToken", async (req, res, next) => {
       verify: true,
       verificationToken: null,
     });
-    return res.json({
+    return res.status(200).json({
       status: "Success",
-      code: 200,
       message: "Verification successful",
     });
-  } catch (e) {
-    console.error(e);
-    next(e);
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
 });
 
@@ -149,9 +145,8 @@ router.post("/login", async (req, res, next) => {
   try {
     const { error, value } = userLoginSchema.validate(req.body);
     if (error) {
-      return res.json({
+      return res.status(400).json({
         status: "Bad Request",
-        code: 400,
         message: "Validation error",
         details: error.details,
       });
@@ -168,9 +163,8 @@ router.post("/login", async (req, res, next) => {
       };
 
       if (!user.verified) {
-        return res.json({
+        return res.status(400).json({
           status: "Failure",
-          code: 400,
           message: "User not verified",
         });
       }
@@ -182,9 +176,8 @@ router.post("/login", async (req, res, next) => {
         const token = jwt.sign(payload, secret, { expiresIn: "1h" });
         await setToken(user.email, token);
 
-        return res.json({
+        return res.status(200).json({
           status: "Success",
-          code: 200,
           data: {
             ID: user._id,
             email: user.email,
@@ -193,9 +186,8 @@ router.post("/login", async (req, res, next) => {
           },
         });
       } else {
-        return res.json({
+        return res.status(200).json({
           status: "Success",
-          code: 200,
           data: {
             ID: user._id,
             email: user.email,
@@ -205,13 +197,13 @@ router.post("/login", async (req, res, next) => {
         });
       }
     } else {
-      return res.json({
+      return res.status(400).json({
         status: "failure",
-        code: 400,
         message: "Wrong email or password",
       });
     }
   } catch (error) {
+    console.error(error);
     next(error);
   }
 });
@@ -232,13 +224,13 @@ router.post("/login", async (req, res, next) => {
 router.get("/current", auth, async (req, res, next) => {
   try {
     const user = req.user;
-    res.json({
+    res.status(200).json({
       status: "Success",
-      code: 200,
       data: user,
     });
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
 });
 
@@ -258,9 +250,8 @@ router.get("/current", auth, async (req, res, next) => {
 router.get("/logout", auth, async (req, res, next) => {
   const { email } = req.user;
   await setToken(email, null);
-  res.json({
+  res.status(200).json({
     status: "Success",
-    code: 200,
     data: {
       message: `Successfully logged out user: ${email}`,
     },
@@ -296,29 +287,27 @@ router.get("/:userId/transactions", auth, async (req, res, next) => {
     const { userId } = req.params;
     const user = await findUserById(userId);
     if (!user) {
-      res.json({
+      res.status(404).json({
         status: "Failure",
-        code: 404,
         message: "User not found",
       });
     } else {
       const transactions = await getUserTransactions(userId);
       if (!transactions) {
-        res.json({
+        res.status(400).json({
           status: "Failure",
-          code: 400,
           message: "User has no transactions in his history",
         });
       } else {
-        res.json({
+        res.status(200).json({
           status: "Success",
-          code: 200,
           data: transactions,
         });
       }
     }
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
 });
 
